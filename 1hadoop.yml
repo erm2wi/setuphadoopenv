@@ -4,43 +4,26 @@
   hosts: all
   become: yes
   vars:
-    ssh_user: ubuntu
+    ssh_user: centos
+    java_version: jdk1.7.0_79
+    java_home: /usr/local/java/{{java_version}}
   tasks:
     
+    - name: Uninstall openjdk
+      yum: name=openjdk state=absent
+    - name: make a directory for java
+      file: path=/usr/local/java/ state= directory
+    - name: download java
+      command: wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.tar.gz"
+    - name: unarchieve jdk
+      unarchieve: src = jdk-7u79-linux-x64.tar.gz dest =/usr/local/java creates={{java_home}} remote_src = yes
+    - name: add jdk to system path
+      lineinfile: dest=/etc/profile regexp='^JAVA_HOME={{java_home}}' line="JAVA_HOME={{java_home}}" state= present
+    - name: add jdk to system path
+      lineinfile: dest =/etc/profile  regexp='^PATH=.*JAVA_HOME.*' line="PATH=$PATH:$HOME/bin/:$JAVA_HOME/bin" state=present
     - name: download hadoop 2.5.2
       get_url:
         url: http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.5.2/hadoop-2.5.2.tar.gz
         dest: "/home/{{ssh_user}}/"
-    - name: unarchieve tar file
+    - name: unarchieve hadoop tar file
       command: tar xvf /home/{{ssh_user}}/hadoop-2.5.2.tar.gz
-    - name: download java
-      command: wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.tar.gz"
-    - name: 
-
-    - name: install pre-requisite package for docker-ce
-      apt: name={{item}} state=present
-      with_items:
-          - apt-transport-https 
-          - ca-certificates 
-          - curl 
-          - software-properties-common
-    - name: Add Docker’s official GPG key
-      apt_key: url="https://download.docker.com/linux/ubuntu/gpg" state=present
-    - name: Get ubuntu release name
-      shell: lsb_release -cs
-      register: releasename
-    # - name: debug
-    #   debug: 
-    #     msg: "the release is {{releasename['stdout']}}"
-    - name: add repository
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{releasename['stdout']}} stable
-        state: present
-    - name: update apt cache
-      command: apt-get update 
-    - name: install docker-ce
-      apt: name=docker-ce state=present
-    - name: add docker group
-      group: name=docker state=present
-    - name: add ubuntu to docker group
-      user: name=ubuntu groups=docker append=yes

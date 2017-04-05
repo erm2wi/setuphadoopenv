@@ -15,15 +15,4 @@
       file: path=/usr/local/java/ state=directory
     - name: download java
       command: 'wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.tar.gz"'
-    - name: unarchieve jdk
-      unarchieve: src = jdk-7u79-linux-x64.tar.gz dest =/usr/local/java creates={{java_home}} remote_src = yes
-    - name: add jdk to system path
-      lineinfile: dest=/etc/profile regexp='^JAVA_HOME={{java_home}}' line="JAVA_HOME={{java_home}}" state= present
-    - name: add jdk to system path
-      lineinfile: dest =/etc/profile  regexp='^PATH=.*JAVA_HOME.*' line="PATH=$PATH:$HOME/bin/:$JAVA_HOME/bin" state=present
-    - name: download hadoop 2.5.2
-      get_url:
-        url: http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.5.2/hadoop-2.5.2.tar.gz
-        dest: "/home/{{ssh_user}}/"
-    - name: unarchieve hadoop tar file
-      command: tar xvf /home/{{ssh_user}}/hadoop-2.5.2.tar.gz
+    
